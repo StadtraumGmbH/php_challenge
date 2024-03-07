@@ -1,3 +1,6 @@
+<?php
+define('IS_PAGE', true);
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -50,18 +53,7 @@
   <p>Welcome to the admin board for the Parking Manager. Please select an action:</p>
 
   <?php
-  $phpVersion = phpversion();
-
-  $servername = "db";
-  $username = "db_username";
-  $password = "db_password";
-  $dbname = "db_name";
-
-  $conn = new mysqli($servername, $username, $password, $dbname);
-
-  if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-  }
+  require_once './inc/database.php';
 
   // Fetch unique cities from the parking_spaces table
   $result = $conn->query("SELECT DISTINCT city FROM parking_spaces");

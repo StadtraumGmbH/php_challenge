@@ -10,14 +10,22 @@ if(!isset($_GET['city'])) {
 }
 
 $city = $_GET['city'];
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 // Fetch cameras for the selected city
-$stmt = $conn->prepare("SELECT * FROM cameras
-                 INNER JOIN parking_spaces ON cameras.parking_space_id = parking_spaces.id
-                 WHERE parking_spaces.city = ?");
+$stmt = $conn->prepare("SELECT r_entry.plate,
+           c_entry.name AS entry_gate,
+           c_exit.name AS exit_gate
+    FROM stays s
+    JOIN recognitions r_entry ON s.entry_recognition_id = r_entry.id
+    JOIN cameras c_entry ON r_entry.camera_id = c_entry.id
+    LEFT JOIN recognitions r_exit ON s.exit_recognition_id = r_exit.id
+    LEFT JOIN cameras c_exit ON r_exit.camera_id = c_exit.id
+    JOIN parking_spaces p ON s.parking_space_id = p.id
+    WHERE p.city = ?");
 $stmt->bind_param('s', $city);
 $stmt->execute();
-$camerasResult = $stmt->get_result();
+$staysResult = $stmt->get_result();
 
 // Close the database connection
 $conn->close();
@@ -38,7 +46,6 @@ $conn->close();
       color: #333;
     }
 
-    /* Add condition to set background color if city is Düsseldorf */
     <?php get_custom_style_content_for_city($city) ?>
     table {
       border-collapse: collapse;
@@ -67,24 +74,22 @@ $conn->close();
 <body>
   <h1>Manage City - <?php echo $city; ?></h1>
 
-  <h2>Cameras</h2>
+  <h2>Stays</h2>
   <table>
     <thead>
       <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Position</th>
-        <th>Directions</th>
+        <th>Plate number</th>
+        <th>Entry Gate</th>
+        <th>Exit Gate</th>
       </tr>
     </thead>
     <tbody>
       <?php
-      while ($camera = $camerasResult->fetch_assoc()) {
+      while ($stay = $staysResult->fetch_assoc()) {
         echo "<tr>";
-        echo "<td>{$camera['id']}</td>";
-        echo "<td>{$camera['name']}</td>";
-        echo "<td>{$camera['position']}</td>";
-        echo "<td>{$camera['direction']}</td>";
+        echo "<td>{$stay['plate']}</td>";
+        echo "<td>{$stay['entry_gate']}</td>";
+        echo "<td>{$stay['exit_gate']}</td>";
         echo "</tr>";
       }
       ?>
