@@ -1,4 +1,5 @@
 <?php
+define('IS_PAGE', true);
 
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
   // Check if both city and action are set
